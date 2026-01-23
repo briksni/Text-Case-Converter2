@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Text Case Converter Online</title>
+  <meta name="description" content="Free online text case converter to change text to uppercase, lowercase and capitalize with word counter." />
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+      background:#f9f9f9;
+    }
+    textarea{
+      width:100%;
+      padding:10px;
+      font-size:16px;
+    }
+    button{
+      margin:5px;
+      padding:8px 14px;
+      cursor:pointer;
+      border:none;
+      background:#333;
+      color:white;
+      border-radius:4px;
+    }
+    button:hover{
+      background:#555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Text Case Converter</h1>
+  <p>Convert your text to uppercase, lowercase or capitalize instantly.</p>
+
+  <textarea id="text" rows="6" oninput="countWords()"></textarea>
+
+  <p id="count">Words: 0</p>
+
+  <button onclick="toUpper()">UPPERCASE</button>
+  <button onclick="toLower()">lowercase</button>
+  <button onclick="capitalize()">Capitalize</button>
+  <button onclick="copyText()">Copy</button>
+  <button onclick="clearText()">Clear</button>
+
+  <script>
+    function toUpper(){
+      let t = document.getElementById("text");
+      t.value = t.value.toUpperCase();
+      countWords();
+    }
+
+    function toLower(){
+      let t = document.getElementById("text");
+      t.value = t.value.toLowerCase();
+      countWords();
+    }
+
+    function capitalize(){
+      let t = document.getElementById("text");
+      t.value = t.value.replace(/\b\w/g, c => c.toUpperCase());
+      countWords();
+    }
+
+    function copyText(){
+      let t = document.getElementById("text");
+      t.select();
+      document.execCommand("copy");
+      alert("Copied!");
+    }
+
+    function clearText(){
+      document.getElementById("text").value = "";
+      countWords();
+    }
+
+    function countWords(){
+      let t = document.getElementById("text").value.trim();
+      let words = t ? t.split(/\s+/).length : 0;
+      document.getElementById("count").innerText = "Words: " + words;
+    }
+  </script>
+
+</body>
+</html>
