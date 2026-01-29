@@ -2,117 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  
-  <meta name="google-site-verification" content="a0IgXemUWpwnjDyON0NrHcp6Gl7IcS6y9TcMDuAlMPs" />
-
   <title>Text Case Converter Online – Uppercase, Lowercase Tool</title>
 
   <meta name="description" content="Free online text case converter to change text to uppercase, lowercase and capitalize with word counter instantly." />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="robots" content="index, follow">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Text Case Converter Online">
-  <meta property="og:description" content="Convert text to uppercase, lowercase and capitalize instantly for free.">
-  <meta property="og:type" content="website">
-
   <style>
-    body{
-      font-family: Arial, sans-serif;
-      max-width: 720px;
-      margin: auto;
-      padding: 20px;
-      background:#f9f9f9;
-    }
-    textarea{
-      width:100%;
-      padding:12px;
-      font-size:16px;
-      margin-top:10px;
-    }
-    button{
-      margin:6px 4px;
-      padding:10px 16px;
-      cursor:pointer;
-      border:none;
-      background:#222;
-      color:white;
-      border-radius:6px;
-    }
-    button:hover{
-      background:#444;
-    }
-    p{
-      line-height:1.6;
-    }
+    body{font-family:Arial;max-width:800px;margin:auto;padding:20px;background:#f9f9f9;}
+    textarea{width:100%;padding:12px;font-size:16px;margin-top:10px;}
+    button{margin:6px 4px;padding:10px 16px;border:none;background:#222;color:white;border-radius:6px;}
+    button:hover{background:#444;}
+    nav a{margin-right:10px;text-decoration:none;color:#333;}
+    p{line-height:1.6;}
   </style>
 </head>
 
 <body>
 
-  <h1>Text Case Converter Online</h1>
-  <p>Use this free online tool to convert your text to uppercase, lowercase and capitalize instantly with word counter.</p>
+<nav>
+  <a href="/">Home</a>
+  <a href="/about.html">About</a>
+  <a href="/privacy.html">Privacy</a>
+</nav>
 
-  <textarea id="text" rows="6" oninput="countWords()" placeholder="Paste your text here..."></textarea>
+<h1>Text Case Converter Online</h1>
+<p>Convert your text to uppercase, lowercase and capitalize instantly with word counter.</p>
 
-  <p id="count">Words: 0</p>
+<textarea id="text" rows="6" oninput="countWords()" placeholder="Paste your text here..."></textarea>
+<p id="count">Words: 0</p>
 
-  <button onclick="toUpper()">UPPERCASE</button>
-  <button onclick="toLower()">lowercase</button>
-  <button onclick="capitalize()">Capitalize</button>
-  <button onclick="copyText()">Copy</button>
-  <button onclick="clearText()">Clear</button>
+<button onclick="toUpper()">UPPERCASE</button>
+<button onclick="toLower()">lowercase</button>
+<button onclick="capitalize()">Capitalize</button>
+<button onclick="copyText()">Copy</button>
+<button onclick="clearText()">Clear</button>
 
-  <h2>What is a Text Case Converter?</h2>
-  <p>
-    A text case converter is an online tool that helps you change your text into uppercase, lowercase, and sentence case quickly without installing any software.
-  </p>
+<h2>FAQ</h2>
 
-  <h2>How to use this tool?</h2>
-  <p>
-    Just paste your text in the box, choose the case you want, and copy the result instantly. It works on all devices.
-  </p>
+<h3>What is this tool?</h3>
+<p>This is a free online text case converter that lets you change text format easily.</p>
 
-  <script>
-    function toUpper(){
-      let t = document.getElementById("text");
-      t.value = t.value.toUpperCase();
-      countWords();
-    }
+<h3>Is it free?</h3>
+<p>Yes, the tool is 100% free and works directly in your browser.</p>
 
-    function toLower(){
-      let t = document.getElementById("text");
-      t.value = t.value.toLowerCase();
-      countWords();
-    }
+<h3>Do you store my text?</h3>
+<p>No, everything runs locally in your browser. We do not save your content.</p>
 
-    function capitalize(){
-      let t = document.getElementById("text");
-      t.value = t.value.replace(/\b\w/g, c => c.toUpperCase());
-      countWords();
-    }
-
-    function copyText(){
-      let t = document.getElementById("text");
-      t.select();
-      document.execCommand("copy");
-      alert("Copied!");
-    }
-
-    function clearText(){
-      document.getElementById("text").value = "";
-      countWords();
-    }
-
-    function countWords(){
-      let t = document.getElementById("text").value.trim();
-      let words = t ? t.split(/\s+/).length : 0;
-      document.getElementById("count").innerText = "Words: " + words;
-    }
-  </script>
+<script>
+function toUpper(){let t=text;t.value=t.value.toUpperCase();countWords();}
+function toLower(){let t=text;t.value=t.value.toLowerCase();countWords();}
+function capitalize(){let t=text;t.value=t.value.replace(/\b\w/g,c=>c.toUpperCase());countWords();}
+function copyText(){text.select();document.execCommand("copy");alert("Copied!");}
+function clearText(){text.value="";countWords();}
+function countWords(){let v=text.value.trim();let w=v?v.split(/\s+/).length:0;count.innerText="Words: "+w;}
+</script>
 
 </body>
 </html>
-
