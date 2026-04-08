@@ -1,62 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Text Case Converter Online – Uppercase, Lowercase Tool</title>
+import streamlit as st
+import whois
+import re
+import socket
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 
-  <meta name="description" content="Free online text case converter to change text to uppercase, lowercase and capitalize with word counter instantly." />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index, follow">
+st.set_page_config(page_title="Domain Checker ULTRA FAST", layout="wide")
+st.title("Domain Checker – ULTRA FAST 🚀")
 
-  <style>
-    body{font-family:Arial;max-width:800px;margin:auto;padding:20px;background:#f9f9f9;}
-    textarea{width:100%;padding:12px;font-size:16px;margin-top:10px;}
-    button{margin:6px 4px;padding:10px 16px;border:none;background:#222;color:white;border-radius:6px;}
-    button:hover{background:#444;}
-    nav a{margin-right:10px;text-decoration:none;color:#333;}
-    p{line-height:1.6;}
-  </style>
-</head>
+# =============================
+# رفع الملف
+# =============================
+uploaded_file = st.file_uploader(
+    "رفع فايل الدومينات (.txt أو .csv)",
+    type=["txt", "csv"]
+)
 
-<body>
+# =============================
+# إعدادات الفلترة
+# =============================
+keyword = st.text_input("الكلمة (اختياري)")
+position = st.selectbox("مكان الكلمة", ["any", "start", "end"])
 
-<nav>
-  <a href="/">Home</a>
-  <a href="/about.html">About</a>
-  <a href="/privacy.html">Privacy</a>
-</nav>
+letter_count = st.number_input(
+    "عدد الحروف قبل .com (0 = بلا فلترة)",
+    min_value=0,
+    value=0
+)
 
-<h1>Text Case Converter Online</h1>
-<p>Convert your text to uppercase, lowercase and capitalize instantly with word counter.</p>
+# =============================
+# الامتدادات
+# =============================
+extensions = [
+    "net","org","io","co","info","biz","app","dev","ai","xyz",
+    "online","site","store","tech","pro","club","live","world",
+    "digital","global","group","media","agency","solutions","cloud"
+]
 
-<textarea id="text" rows="6" oninput="countWords()" placeholder="Paste your text here..."></textarea>
-<p id="count">Words: 0</p>
+# =============================
+# فلترة الدومين
+# =============================
+def filter_domain(domain):
 
-<button onclick="toUpper()">UPPERCASE</button>
-<button onclick="toLower()">lowercase</button>
-<button onclick="capitalize()">Capitalize</button>
-<button onclick="copyText()">Copy</button>
-<button onclick="clearText()">Clear</button>
+    domain = domain.lower().strip()
 
-<h2>FAQ</h2>
+    if not re.fullmatch(r"[a-z]+\.com", domain):
+        return False
 
-<h3>What is this tool?</h3>
-<p>This is a free online text case converter that lets you change text format easily.</p>
+    name_only = domain[:-4]
 
-<h3>Is it free?</h3>
-<p>Yes, the tool is 100% free and works directly in your browser.</p>
+    if keyword:
+        kw = keyword.lower()
 
-<h3>Do you store my text?</h3>
-<p>No, everything runs locally in your browser. We do not save your content.</p>
+        if position == "start" and not name_only.startswith(kw):
+            return False
 
-<script>
-function toUpper(){let t=text;t.value=t.value.toUpperCase();countWords();}
-function toLower(){let t=text;t.value=t.value.toLowerCase();countWords();}
-function capitalize(){let t=text;t.value=t.value.replace(/\b\w/g,c=>c.toUpperCase());countWords();}
-function copyText(){text.select();document.execCommand("copy");alert("Copied!");}
-function clearText(){text.value="";countWords();}
-function countWords(){let v=text.value.trim();let w=v?v.split(/\s+/).length:0;count.innerText="Words: "+w;}
-</script>
+        if position == "end" and not name_only.endswith(kw):
+            return False
 
-</body>
-</html>
+        if position == "any" and kw not in name_only:
+            return False
+
+    if letter_count > 0 and len(name_only) != letter_count:
+        return False
+
+    return True
+
+# =============================
+# WHOIS + DNS fallback
+# =============================
+@lru_cache(maxsize=50000)
+def is_registered(domain):
+
+    try:
+        w = whois.whois(domain)
+        if w.domain_name:
+            return True
+    except:
+        pass
+
+    try:
+        socket.gethostbyname(domain)
+        return True
+    except:
+        return False
+
+# =============================
+# فحص الامتدادات + availability
+# =============================
+def check_domain_exts(domain):
+
+    name_only = domain[:-4]
+    found_exts = []
+
+    # 🔥 تحقق من .com مرة وحدة فقط
+    com_available = not is_registered(domain)
+
+    with ThreadPoolExecutor(max_workers=8) as ext_executor:
+
+        futures = {
+            ext_executor.submit(is_registered, f"{name_only}.{ext}"): ext
+            for ext in extensions
+        }
+
+        for future in as_completed(futures):
+
+            ext = futures[future]
+
+            try:
+                if future.result():
+                    found_exts.append(ext)
+            except:
+                pass
+
+    return domain, found_exts, com_available
+
+# =============================
+# المعالجة الرئيسية
+# =============================
+if uploaded_file:
+
+    lines = uploaded_file.readlines()
+    domains = []
+
+    for line in lines:
+        decoded = line.decode("utf-8").strip()
+        if decoded:
+            domains.append(decoded.split(",")[0])
+
+    filtered = [d for d in domains if filter_domain(d)]
+
+    st.write(f"عدد الدومينات بعد الفلترة: {len(filtered)}")
+    st.write("---")
+
+    progress = st.progress(0)
+    results = []
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+
+        futures = [executor.submit(check_domain_exts, d) for d in filtered]
+
+        total = len(futures) if futures else 1
+
+        for i, future in enumerate(as_completed(futures)):
+
+            results.append(future.result())
+            progress.progress((i + 1) / total)
+
+    # =============================
+    # عرض النتائج
+    # =============================
+    for domain, found_exts, available in results:
+
+        if available:
+            status = "✅ AVAILABLE"
+        else:
+            status = "❌ TAKEN"
+
+        if found_exts:
+            st.success(
+                f"{domain} → {status} | مسجل فـ: {', '.join(found_exts)}"
+            )
+        else:
+            st.info(
+                f"{domain} → {status} | غير مسجل فهاد الامتدادات"
+            )
